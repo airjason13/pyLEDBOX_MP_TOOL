@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QMainWindow, QGridLayout, QLineEdit, QFrame, QWidget
     QGroupBox, QVBoxLayout, QRadioButton
 from PyQt5 import QtWidgets
 import pyqtgraph as pg
-
+from global_defs import *
 import utils_usb
 from pyqt_worker import Worker
 import threading
@@ -31,9 +31,12 @@ class MainUi(QMainWindow):
         self.init_ui()
 
         self.gisled_machine_connected_status = False
-        self.gisled_mount_point = None
+        self.gisled_mount_point = 'NA'
+        self.gisled_machine_usb_dev = None
+        self.machine_type = machine_type_client
         self.find_gisled_machine_mutex = threading.Lock()
-        #self.search_gisled = utils_usb.find_gisled_machine()
+
+        # self.search_gisled = utils_usb.find_gisled_machine()
         self.thread = Worker(method=self.search_gisled)
         self.thread.start()
 
@@ -57,24 +60,52 @@ class MainUi(QMainWindow):
         self.label_gisled_machine_cpu_serial_number = QLabel(self.widget)
         self.label_gisled_machine_cpu_serial_number.setFont(self._font)
         self.label_gisled_machine_cpu_serial_number.setText("GISTLED Machine CPU SN : ")
-        self.lineedit_gisled_machine_cpu_serial_number = QLabel(self.widget)
+        self.lineedit_gisled_machine_cpu_serial_number = QLineEdit(self.widget)
         self.lineedit_gisled_machine_cpu_serial_number.setFont(self._font)
         self.lineedit_gisled_machine_cpu_serial_number.setText("NA")
+        self.lineedit_gisled_machine_cpu_serial_number.setReadOnly(True)
 
         self.label_gisled_machine_eth_mac = QLabel(self.widget)
         self.label_gisled_machine_eth_mac.setFont(self._font)
         self.label_gisled_machine_eth_mac.setText("GISTLED Machine ETH MAC : ")
-        self.lineedit_gisled_machine_eth_mac = QLabel(self.widget)
+        self.lineedit_gisled_machine_eth_mac = QLineEdit(self.widget)
         self.lineedit_gisled_machine_eth_mac.setFont(self._font)
         self.lineedit_gisled_machine_eth_mac.setText("NA")
+        self.lineedit_gisled_machine_eth_mac.setReadOnly(True)
+
         self.label_gisled_machine_wlan_mac = QLabel(self.widget)
         self.label_gisled_machine_wlan_mac.setFont(self._font)
         self.label_gisled_machine_wlan_mac.setText("GISTLED Machine WLAN MAC : ")
-        self.lineedit_gisled_machine_wlan_mac = QLabel(self.widget)
+        self.lineedit_gisled_machine_wlan_mac = QLineEdit(self.widget)
         self.lineedit_gisled_machine_wlan_mac.setFont(self._font)
         self.lineedit_gisled_machine_wlan_mac.setText("NA")
+        self.lineedit_gisled_machine_wlan_mac.setReadOnly(True)
         self.label_gisled_machine_serial_number = QLabel(self.widget)
         self.label_gisled_machine_serial_number.setFont(self._font)
+        self.label_gisled_ledclient_version = QLabel(self.widget)
+        self.label_gisled_ledclient_version.setFont(self._font)
+        self.label_gisled_ledclient_version.setText("GISTLED Ledclient Version : ")
+        self.lineedit_gisled_ledclient_version = QLineEdit(self.widget)
+        self.lineedit_gisled_ledclient_version.setFont(self._font)
+        self.lineedit_gisled_ledclient_version.setText("NA")
+        self.lineedit_gisled_machine_wlan_mac.setReadOnly(True)
+
+        self.label_gisled_ledserver_version = QLabel(self.widget)
+        self.label_gisled_ledserver_version.setFont(self._font)
+        self.label_gisled_ledserver_version.setText("GISTLED Ledserver Version : ")
+        self.lineedit_gisled_ledserver_version = QLineEdit(self.widget)
+        self.lineedit_gisled_ledserver_version.setFont(self._font)
+        self.lineedit_gisled_ledserver_version.setText("NA")
+        self.lineedit_gisled_ledserver_version.setReadOnly(True)
+
+        self.label_gisled_system_version = QLabel(self.widget)
+        self.label_gisled_system_version.setFont(self._font)
+        self.label_gisled_system_version.setText("GISTLED System Version : ")
+        self.lineedit_gisled_system_version = QLineEdit(self.widget)
+        self.lineedit_gisled_system_version.setFont(self._font)
+        self.lineedit_gisled_system_version.setText("NA")
+        self.lineedit_gisled_system_version.setReadOnly(True)
+
         self.label_gisled_machine_serial_number.setText("GISTLED Machine SN : ")
         self.lineedit_gisled_machine_serial_number = QLineEdit(self.widget)
         self.lineedit_gisled_machine_serial_number.setFont(self._font)
@@ -83,10 +114,12 @@ class MainUi(QMainWindow):
         self.btn_write_gisled_machine_serial_number = QPushButton(self.widget)
         self.btn_write_gisled_machine_serial_number.setFont(self._font)
         self.btn_write_gisled_machine_serial_number.setText("Write Box SN")
+        self.btn_write_gisled_machine_serial_number.clicked.connect(self.write_gisled_machine_serial_number)
 
         self.btn_write_gisled_machine_type = QPushButton(self.widget)
         self.btn_write_gisled_machine_type.setFont(self._font)
         self.btn_write_gisled_machine_type.setText("Write Box Type")
+        self.btn_write_gisled_machine_type.clicked.connect(self.write_gisled_machine_type)
 
         self.btn_write_gisled_mp_file = QPushButton(self.widget)
         self.btn_write_gisled_mp_file.setFont(self._font)
@@ -94,6 +127,7 @@ class MainUi(QMainWindow):
 
         self.groupbox_led_role = QGroupBox("GISLED Machine Type")
         self.groupbox_led_role.setFont(self._font)
+        # self.groupbox_led_role.setGeometry(0, 0, 320, 360)
 
         self.groupbox_led_role_vboxlayout = QVBoxLayout()
         self.groupbox_led_role.setLayout(self.groupbox_led_role_vboxlayout)
@@ -114,26 +148,81 @@ class MainUi(QMainWindow):
         self.gridlayout.addWidget(self.lineedit_gisled_machine_eth_mac, 2, 1)
         self.gridlayout.addWidget(self.label_gisled_machine_wlan_mac, 3, 0)
         self.gridlayout.addWidget(self.lineedit_gisled_machine_wlan_mac, 3, 1)
-        self.gridlayout.addWidget(self.label_gisled_machine_serial_number, 4, 0)
-        self.gridlayout.addWidget(self.lineedit_gisled_machine_serial_number, 4, 1)
+        self.gridlayout.addWidget(self.label_gisled_ledclient_version, 4, 0)
+        self.gridlayout.addWidget(self.lineedit_gisled_ledclient_version, 4, 1)
+        self.gridlayout.addWidget(self.label_gisled_ledserver_version, 5, 0)
+        self.gridlayout.addWidget(self.lineedit_gisled_ledserver_version, 5, 1)
+        self.gridlayout.addWidget(self.label_gisled_system_version, 6, 0)
+        self.gridlayout.addWidget(self.lineedit_gisled_system_version, 6, 1)
 
-        self.gridlayout.addWidget(self.btn_write_gisled_machine_serial_number, 4, 3)
+        self.gridlayout.addWidget(self.label_gisled_machine_serial_number, 7, 0)
+        self.gridlayout.addWidget(self.lineedit_gisled_machine_serial_number, 7, 1)
+
+        self.gridlayout.addWidget(self.btn_write_gisled_machine_serial_number, 7, 3)
         self.gridlayout.addWidget(self.btn_write_gisled_mp_file, 0, 3)
-        self.gridlayout.addWidget(self.groupbox_led_role, 5, 0, 2, 3)
-        self.gridlayout.addWidget(self.btn_write_gisled_machine_type, 5, 3)
-
+        self.gridlayout.addWidget(self.groupbox_led_role, 8, 0, 3, 3)
+        self.gridlayout.addWidget(self.btn_write_gisled_machine_type, 8, 3)
 
     def search_gisled(self):
         self.find_gisled_machine_mutex.acquire()
         self.gisled_machine_usb_dev = utils_usb.find_gisled_machine()
         if self.gisled_machine_usb_dev is not None:
-            self.label_gisled_mount_status.setText("gisled machine connected")
+            self.gisled_mount_point = utils_usb.get_gisled_mountpoint()
+            # log.debug("gisled_mount_point : %s", self.gisled_mount_point)
+            self.label_gisled_mount_status.setText("gisled machine connected at " + self.gisled_mount_point)
             if self.gisled_machine_connected_status is False:
-                log.debug("found gisled machine")
-                self.gisled_mount_point = utils_usb.get_gisled_mountpoint()
-                log.debug("gisled_mount_point : %s", self.gisled_mount_point)
+                # log.debug("found gisled machine")
+                # get machine info
+                self.lineedit_gisled_machine_cpu_serial_number.setText(
+                    utils_usb.get_gisled_cpu_serial_number(self.gisled_mount_point))
+                self.lineedit_gisled_machine_eth_mac.setText(
+                    utils_usb.get_gisled_eth_mac_number(self.gisled_mount_point))
+                self.lineedit_gisled_machine_wlan_mac.setText(
+                    utils_usb.get_gisled_wlan_mac_number(self.gisled_mount_point))
+                self.lineedit_gisled_ledclient_version.setText(
+                    utils_usb.get_gisled_ledclient_version(self.gisled_mount_point))
+                self.lineedit_gisled_ledserver_version.setText(
+                    utils_usb.get_gisled_ledserver_version(self.gisled_mount_point))
+                self.lineedit_gisled_system_version.setText(
+                    utils_usb.get_gisled_ledserver_version(self.gisled_mount_point))
+
+                self.lineedit_gisled_machine_serial_number.setText(
+                    utils_usb.get_gisled_box_serial_number(self.gisled_mount_point))
+
+
+                self.machine_type = utils_usb.get_gisled_box_type(self.gisled_mount_point)
+
+
+                if machine_type_aio in self.machine_type:
+                    self.radiobutton_ledrole_aio.setChecked(True)
+                elif machine_type_server in self.machine_type:
+                    self.radiobutton_ledrole_server.setChecked(True)
+                else:
+                    self.radiobutton_ledrole_client.setChecked(True)
+                    self.write_gisled_machine_type()
+
                 self.gisled_machine_connected_status = True
 
+        else:
+            self.label_gisled_mount_status.setText("gisled machine disconnected")
+            self.gisled_machine_connected_status = False
         self.find_gisled_machine_mutex.release()
         time.sleep(2)
+
+    def write_gisled_machine_serial_number(self):
+        log.debug("sn : %s", self.lineedit_gisled_machine_serial_number.text())
+        ret = utils_usb.set_gisled_box_serial_number(self.gisled_mount_point,
+                                                     self.lineedit_gisled_machine_serial_number.text())
+        if ret is False:
+            log.fatal("write machine serial number error!")
+
+    def write_gisled_machine_type(self):
+        if self.radiobutton_ledrole_client.isChecked():
+            self.machine_type = machine_type_client
+        elif self.radiobutton_ledrole_server.isChecked():
+            self.machine_type = machine_type_server
+        elif self.radiobutton_ledrole_aio.isChecked():
+            self.machine_type = machine_type_aio
+        log.debug("machine_type : %s", self.machine_type)
+        ret = utils_usb.set_gisled_box_type(self.gisled_mount_point, self.machine_type)
 
