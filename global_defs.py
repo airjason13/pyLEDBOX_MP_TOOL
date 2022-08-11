@@ -1,4 +1,4 @@
-
+import platform
 
 gisled_vid = 0x9527
 gisled_pid = 0x5678
@@ -17,3 +17,10 @@ file_name_gisled_ledsystem_version = 'ledsystem_version'
 machine_type_client = 'Client'
 machine_type_server = 'Server'
 machine_type_aio = 'AIO'
+
+MP_FILE_NAME="GIS_LED_MP_LOG.xlsx"
+
+if "Linux" in platform.system():
+	print("Linux")
+elif "Windows" in platform.system():
+	print("Windows")

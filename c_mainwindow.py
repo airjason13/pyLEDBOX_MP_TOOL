@@ -12,6 +12,7 @@ import utils_usb
 from pyqt_worker import Worker
 import threading
 import psutil
+from utils_xls import XlsMod
 import log_utils
 
 log = log_utils.logging_init(__file__)
@@ -40,6 +41,7 @@ class MainUi(QMainWindow):
         self.thread = Worker(method=self.search_gisled)
         self.thread.start()
 
+        self.xls = XlsMod("/home/venom/" + MP_FILE_NAME, self)
 
 
     def init_ui(self):
@@ -124,6 +126,7 @@ class MainUi(QMainWindow):
         self.btn_write_gisled_mp_file = QPushButton(self.widget)
         self.btn_write_gisled_mp_file.setFont(self._font)
         self.btn_write_gisled_mp_file.setText("Write MP File")
+        self.btn_write_gisled_mp_file.clicked.connect(self.write_gisled_mp_sheet)
 
         self.groupbox_led_role = QGroupBox("GISLED Machine Type")
         self.groupbox_led_role.setFont(self._font)
@@ -184,7 +187,7 @@ class MainUi(QMainWindow):
                 self.lineedit_gisled_ledserver_version.setText(
                     utils_usb.get_gisled_ledserver_version(self.gisled_mount_point))
                 self.lineedit_gisled_system_version.setText(
-                    utils_usb.get_gisled_ledserver_version(self.gisled_mount_point))
+                    utils_usb.get_gisled_ledsystem_version(self.gisled_mount_point))
 
                 self.lineedit_gisled_machine_serial_number.setText(
                     utils_usb.get_gisled_box_serial_number(self.gisled_mount_point))
@@ -200,8 +203,10 @@ class MainUi(QMainWindow):
                 else:
                     self.radiobutton_ledrole_client.setChecked(True)
                     self.write_gisled_machine_type()
-
-                self.gisled_machine_connected_status = True
+                if utils_usb.get_gisled_cpu_serial_number(self.gisled_mount_point) == 'NA':
+                    self.gisled_machine_connected_status = False
+                else:
+                    self.gisled_machine_connected_status = True
 
         else:
             self.label_gisled_mount_status.setText("gisled machine disconnected")
@@ -226,3 +231,14 @@ class MainUi(QMainWindow):
         log.debug("machine_type : %s", self.machine_type)
         ret = utils_usb.set_gisled_box_type(self.gisled_mount_point, self.machine_type)
 
+    def write_gisled_mp_sheet(self):
+        self.xls.write_cpu_serial_number(utils_usb.get_gisled_cpu_serial_number(self.gisled_mount_point))
+        self.xls.write_box_serial_number(utils_usb.get_gisled_box_serial_number(self.gisled_mount_point))
+        self.xls.write_eth_mac_address(utils_usb.get_gisled_eth_mac_number(self.gisled_mount_point))
+        self.xls.write_wlan_mac_address(utils_usb.get_gisled_wlan_mac_number(self.gisled_mount_point))
+        self.xls.write_ledclient_sw_version(utils_usb.get_gisled_ledclient_version(self.gisled_mount_point))
+        self.xls.write_ledserver_sw_version(utils_usb.get_gisled_ledserver_version(self.gisled_mount_point))
+        self.xls.write_ledsystem_sw_version(utils_usb.get_gisled_ledsystem_version(self.gisled_mount_point))
+
+        self.xls.save_work_sheet()
+        self.xls.increase_working_row()
