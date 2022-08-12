@@ -29,6 +29,7 @@ class MainUi(QMainWindow):
 
         self.setWindowOpacity(1.0)  # 窗口透明度
         self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+        self.engineer_mode = False
         self.init_ui()
 
         self.gisled_machine_connected_status = False
@@ -128,6 +129,15 @@ class MainUi(QMainWindow):
         self.btn_write_gisled_mp_file.setText("Write MP File")
         self.btn_write_gisled_mp_file.clicked.connect(self.write_gisled_mp_sheet)
 
+        self.btn_engineer_mode = QPushButton(self.widget)
+        self.btn_engineer_mode.setFont(self._font)
+        self.btn_engineer_mode.setText("Engineer Mode")
+        self.btn_engineer_mode.clicked.connect(self.trigger_engineer_mode)
+
+        if self.engineer_mode is False:
+            self.btn_write_gisled_machine_type.setVisible(False)
+            self.btn_write_gisled_machine_serial_number.setVisible(False)
+
         self.groupbox_led_role = QGroupBox("GISLED Machine Type")
         self.groupbox_led_role.setFont(self._font)
         # self.groupbox_led_role.setGeometry(0, 0, 320, 360)
@@ -165,6 +175,9 @@ class MainUi(QMainWindow):
         self.gridlayout.addWidget(self.btn_write_gisled_mp_file, 0, 3)
         self.gridlayout.addWidget(self.groupbox_led_role, 8, 0, 3, 3)
         self.gridlayout.addWidget(self.btn_write_gisled_machine_type, 8, 3)
+        self.gridlayout.addWidget(self.btn_engineer_mode, 10, 3)
+
+
 
     def search_gisled(self):
         self.find_gisled_machine_mutex.acquire()
@@ -242,3 +255,16 @@ class MainUi(QMainWindow):
 
         self.xls.save_work_sheet()
         self.xls.increase_working_row()
+
+    def trigger_engineer_mode(self):
+        if self.engineer_mode is False:
+            self.engineer_mode = True
+        else:
+            self.engineer_mode = False
+
+        if self.engineer_mode is True:
+            self.btn_write_gisled_machine_type.setVisible(True)
+            self.btn_write_gisled_machine_serial_number.setVisible(True)
+        else:
+            self.btn_write_gisled_machine_type.setVisible(False)
+            self.btn_write_gisled_machine_serial_number.setVisible(False)
