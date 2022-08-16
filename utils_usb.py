@@ -4,6 +4,8 @@ import os.path
 import usb.core
 from global_defs import *
 import log_utils
+import datetime
+import utils_sn_fops
 
 log = log_utils.logging_init(__file__)
 
@@ -69,8 +71,10 @@ def get_gisled_box_serial_number(mount_point):
             f = open(file_uri_gisled_box_serial_number, "r")
             return f.read()
         else:
-            log.debug("No file")
-            return 'NA'
+            '''log.debug("No file")
+            return 'NA'''
+            return generate_box_serial_number(mount_point)
+
     except RuntimeError as e:
         log.debug(e)
         return 'NA'
@@ -173,3 +177,32 @@ def set_gisled_box_type(mount_point, machine_type):
     except RuntimeError as e:
         log.debug(e)
         return False
+
+
+def get_week_number():
+    date_today = datetime.date.today()
+    year, week_num, day_of_week = date_today.isocalendar()
+    return week_num
+
+
+def get_box_serial_number_prefix():
+    return BOX_SERIAL_NUMBER_PREFIX
+
+
+def generate_box_serial_number(mount_point):
+    box_sn_prefix = get_box_serial_number_prefix()
+    box_type = get_gisled_box_type(mount_point)[0]
+    log.debug("box_type : %s", box_type)
+    box_generation = get_gisled_ledclient_version(mount_point).split("_")[1].replace("G", "A")
+    log.debug("box_generation : %s", box_generation)
+    year = datetime.datetime.now().date().strftime("%Y")[1:]
+    log.debug("year : %s", year)
+    week_number = str(get_week_number())
+    machine_count = utils_sn_fops.get_week_product_sn_from_snfile()
+    utils_sn_fops.increase_week_product_sn()
+    log.debug("machine_count : %s", str(machine_count))
+    serial_number = box_sn_prefix + "_" + box_type + box_generation + year + week_number + machine_count
+    log.debug("serial_number = %s", serial_number)
+    return serial_number
+
+

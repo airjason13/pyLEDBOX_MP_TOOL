@@ -18,6 +18,12 @@ machine_type_client = 'Client'
 machine_type_server = 'Server'
 machine_type_aio = 'AIO'
 
+# box serial number prefix
+BOX_SERIAL_NUMBER_PREFIX = "GISTLED"
+
+# box serial number count of the week
+FILE_NAME_OF_SN_COUNT_OF_WEEK = "sn_count_of_week.dat"
+
 MP_FILE_NAME="GIS_LED_MP_LOG.xlsx"
 
 if "Linux" in platform.system():

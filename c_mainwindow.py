@@ -14,6 +14,8 @@ import threading
 import psutil
 from utils_xls import XlsMod
 import log_utils
+import datetime
+import utils_sn_fops
 
 log = log_utils.logging_init(__file__)
 
@@ -37,6 +39,8 @@ class MainUi(QMainWindow):
         self.gisled_machine_usb_dev = None
         self.machine_type = machine_type_client
         self.find_gisled_machine_mutex = threading.Lock()
+        self.week_number = None
+        self.get_week_number()
 
         # self.search_gisled = utils_usb.find_gisled_machine()
         self.thread = Worker(method=self.search_gisled)
@@ -44,6 +48,9 @@ class MainUi(QMainWindow):
 
         self.xls = XlsMod("/home/venom/" + MP_FILE_NAME, self)
 
+        # utils_sn_fops.get_week_product_sn_from_snfile()
+        utils_sn_fops.reset_week_product_snfile()
+        # utils_sn_fops.increase_week_product_sn()
 
     def init_ui(self):
         self.resize(1280, 720)
@@ -205,9 +212,8 @@ class MainUi(QMainWindow):
                 self.lineedit_gisled_machine_serial_number.setText(
                     utils_usb.get_gisled_box_serial_number(self.gisled_mount_point))
 
-
                 self.machine_type = utils_usb.get_gisled_box_type(self.gisled_mount_point)
-
+                utils_usb.get_gisled_box_type(self.gisled_mount_point)
 
                 if machine_type_aio in self.machine_type:
                     self.radiobutton_ledrole_aio.setChecked(True)
@@ -268,3 +274,9 @@ class MainUi(QMainWindow):
         else:
             self.btn_write_gisled_machine_type.setVisible(False)
             self.btn_write_gisled_machine_serial_number.setVisible(False)
+
+    def get_week_number(self):
+        date_today =datetime.date.today()
+        year, week_num, day_of_week = date_today.isocalendar()
+        self.week_number = week_num
+        return self.week_number
