@@ -10,13 +10,13 @@ import datetime
 
 log = log_utils.logging_init(__file__)
 
-machine_serial_number_column=1
-cpu_serial_number_column=2
-eth_mac_addr_column=3
-wlan_mac_addr_column=4
-ledclient_sw_version_column=5
-ledserver_sw_version_column=6
-ledsystem_sw_version_column=7
+machine_serial_number_column = 1
+cpu_serial_number_column = 2
+eth_mac_addr_column = 3
+wlan_mac_addr_column = 4
+ledclient_sw_version_column = 5
+ledserver_sw_version_column = 6
+ledsystem_sw_version_column = 7
 
 
 
@@ -74,6 +74,7 @@ class XlsMod(QObject):
 		ws.cell(column=6, row=1).value = "LedServer SW Version"
 		ws.cell(column=7, row=1).value = "LedSystem SW Version"
 
+
 		for i in range(ord('A'), ord('H') + 1):
 			ws.column_dimensions[str(chr(i))].width = 20
 		log.debug("ws.max_row : %d", ws.max_row)
@@ -102,4 +103,20 @@ class XlsMod(QObject):
 	def increase_working_row(self):
 		self.working_row += 1
 
+	def find_match_gisled_box_serial_number(self, box_serial_number):
+		log.debug("find box_serial_number:%s", box_serial_number)
+		for sheet in self.xls_fd._sheets:
+			log.debug("sheet.title: %s", sheet.title)
+			if "2" in sheet.title:
+				log.debug("len(sheet.rows):%d", sheet.max_row)
+
+				for i in range(1, sheet.max_row + 1):
+					for j in range(machine_serial_number_column, machine_serial_number_column + 1):
+						log.debug(sheet.cell(row=i, column=j).value)
+						if box_serial_number == sheet.cell(row=i, column=j).value:
+							log.debug("row : %d", i)
+							log.debug("column : %d", j)
+							return True, i, j
+		log.debug("return False")
+		return False, None, None
 

@@ -4,7 +4,7 @@ import qdarkstyle as qdarkstyle
 from PyQt5.QtCore import QThread, pyqtSignal, QDateTime, QObject
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow, QGridLayout, QLineEdit, QFrame, QWidget, QLabel, QSizePolicy, QPushButton, \
-    QGroupBox, QVBoxLayout, QRadioButton
+    QGroupBox, QVBoxLayout, QRadioButton, QMessageBox
 from PyQt5 import QtWidgets
 import pyqtgraph as pg
 from global_defs import *
@@ -189,7 +189,8 @@ class MainUi(QMainWindow):
     def search_gisled(self):
         self.find_gisled_machine_mutex.acquire()
         self.gisled_machine_usb_dev = utils_usb.find_gisled_machine()
-        if self.gisled_machine_usb_dev is not None:
+        if len(self.gisled_machine_usb_dev) != 0:
+
             self.gisled_mount_point = utils_usb.get_gisled_mountpoint()
             # log.debug("gisled_mount_point : %s", self.gisled_mount_point)
             self.label_gisled_mount_status.setText("gisled machine connected at " + self.gisled_mount_point)
@@ -208,9 +209,11 @@ class MainUi(QMainWindow):
                     utils_usb.get_gisled_ledserver_version(self.gisled_mount_point))
                 self.lineedit_gisled_system_version.setText(
                     utils_usb.get_gisled_ledsystem_version(self.gisled_mount_point))
-
                 self.lineedit_gisled_machine_serial_number.setText(
                     utils_usb.get_gisled_box_serial_number(self.gisled_mount_point))
+
+                # for test
+                # self.xls.find_match_gisled_box_serial_number(utils_usb.get_gisled_box_serial_number(self.gisled_mount_point))
 
                 self.machine_type = utils_usb.get_gisled_box_type(self.gisled_mount_point)
                 utils_usb.get_gisled_box_type(self.gisled_mount_point)
@@ -228,8 +231,19 @@ class MainUi(QMainWindow):
                     self.gisled_machine_connected_status = True
 
         else:
+            log.debug("self.gisled_machine_usb_dev is None")
             self.label_gisled_mount_status.setText("gisled machine disconnected")
+            if self.gisled_machine_connected_status is True:
+                self.lineedit_gisled_machine_cpu_serial_number.setText("NA")
+                self.lineedit_gisled_machine_eth_mac.setText("NA")
+                self.lineedit_gisled_machine_wlan_mac.setText("NA")
+                self.lineedit_gisled_ledclient_version.setText("NA")
+                self.lineedit_gisled_ledserver_version.setText("NA")
+                self.lineedit_gisled_system_version.setText("NA")
+                self.lineedit_gisled_machine_serial_number.setText("NA")
             self.gisled_machine_connected_status = False
+
+
         self.find_gisled_machine_mutex.release()
         time.sleep(2)
 
@@ -251,6 +265,12 @@ class MainUi(QMainWindow):
         ret = utils_usb.set_gisled_box_type(self.gisled_mount_point, self.machine_type)
 
     def write_gisled_mp_sheet(self):
+        b_ret, row, column = self.xls.find_match_gisled_box_serial_number(
+            utils_usb.get_gisled_box_serial_number(self.gisled_mount_point))
+        log.debug("b_ret = %d", b_ret)
+        if b_ret is True:
+            QMessageBox.about(self, "Warning", "This BOX is already logged.")
+            return
         self.xls.write_cpu_serial_number(utils_usb.get_gisled_cpu_serial_number(self.gisled_mount_point))
         self.xls.write_box_serial_number(utils_usb.get_gisled_box_serial_number(self.gisled_mount_point))
         self.xls.write_eth_mac_address(utils_usb.get_gisled_eth_mac_number(self.gisled_mount_point))

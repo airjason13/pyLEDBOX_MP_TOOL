@@ -13,7 +13,7 @@ log = log_utils.logging_init(__file__)
 def find_gisled_machine():
     devs = list(usb.core.find(find_all=True, idVendor=gisled_vid, idProduct=gisled_pid))
 
-    # log.debug("find_pico")
+    # log.debug("devs : %s", devs)
     # was it found?
     if devs is None:
         # raise ValueError('Device not found')
@@ -71,10 +71,19 @@ def get_gisled_box_serial_number(mount_point):
             f = open(file_uri_gisled_box_serial_number, "r")
             return f.read()
         else:
-            '''log.debug("No file")
-            return 'NA'''
-            return generate_box_serial_number(mount_point)
-
+            if os.path.exists(mount_point) is False:
+                log.debug("No file")
+                return 'NA'''
+            else:
+                box_serial_number = generate_box_serial_number(mount_point)
+                file = Path(file_uri_gisled_box_serial_number)
+                file.touch(exist_ok=True)
+                f = open(file_uri_gisled_box_serial_number, "w")
+                f.write(box_serial_number)
+                f.flush()
+                f.close()
+                log.debug("write box serial number")
+                return box_serial_number
     except RuntimeError as e:
         log.debug(e)
         return 'NA'
@@ -92,6 +101,7 @@ def get_gisled_box_type(mount_point):
     except RuntimeError as e:
         log.debug(e)
         return 'NA'
+
 
 def get_gisled_wlan_mac_number(mount_point):
     try:
@@ -120,6 +130,7 @@ def get_gisled_ledclient_version(mount_point):
         log.debug(e)
         return 'NA'
 
+
 def get_gisled_ledserver_version(mount_point):
     try:
         file_uri_gisled_ledserver_version = mount_point + "/" + file_name_gisled_ledserver_version
@@ -132,6 +143,7 @@ def get_gisled_ledserver_version(mount_point):
     except RuntimeError as e:
         log.debug(e)
         return 'NA'
+
 
 def get_gisled_ledsystem_version(mount_point):
     try:
